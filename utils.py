@@ -1,9 +1,13 @@
 from collections import defaultdict
 from urllib import parse
+
 import requests
+import time
+
+from selenium import webdriver
 from conf import config, constants
+from conf.config import MAX_SINGLE_NUM, MIN_SINGLE_NUM, SEX, THRESHOLD_SCORE,YEAR,MONTH,DATE,HOUR,MINUTE
 from data import full_wuxing_dict as fwd
-from conf.config import MIN_SINGLE_NUM, MAX_SINGLE_NUM, SEX, THRESHOLD_SCORE
 
 TESTED_FILE = 'result/name_tested.txt'  # 已经在网站测试过的名字
 RESULT_FILE = 'result/name.txt'  # 结果算到的好名字
@@ -73,27 +77,11 @@ def writeDown(result, file_name):
 
 
 def getHtml(url, req_params=None, req_headers=None):
-    if req_headers is None:
-        req_headers = {}
-    if req_params is None:
-        req_params = {}
-
-    try:
-        common_params = dict(timeout=5, headers=req_headers)
-        if req_params and req_headers:
-            r = requests.get(url, params=req_params, **common_params)
-        else:
-            r = requests.get(url, **common_params)
-
-        # print(r.text, )
-        # print(r.url, r.encoding, r.status_code, r.headers)
-        r.raise_for_status()
-
-        return r.text
-        # return response.decode('gb2312', 'ignore')
-    except requests.RequestException:
-        print('Oops! Timeout Error! Sorry!')
-
+    # 这里图方便使用的是绝对路径，使用的时候请替换成自己的
+    driver = webdriver.PhantomJS(executable_path='F:/Download/phantomjs-2.1.1-windows/phantomjs-2.1.1-windows/bin/phantomjs.exe')
+    driver.get(url)
+    time.sleep(1)
+    return driver
 
 def getScore(name):
     """
@@ -102,18 +90,17 @@ def getScore(name):
     :return: 得分
     """
     try:
-        surname = parse.quote(name[0:1].encode('gb2312'))
-        lastname = parse.quote(name[1:].encode('gb2312'))
+        surname = parse.quote(name[0:1].encode('utf-8'))
+        lastname = parse.quote(name[1:].encode('utf-8'))
     except UnicodeEncodeError as e:
         print(name, '出错：', str(e))
         return
-    s = parse.quote(SEX.encode('gb2312'))
-    detail_url = "http://www.qimingzi.net/simpleReport.aspx?surname=" + surname + "&name=" + lastname + "&sex=" + s
-    html = getHtml(detail_url)
-
-    first_tag = '<div class="fenshu">'
-    last_tag = '</div><a name="zhuanye">'
-    score = html[html.index(first_tag) + len(first_tag): html.index(last_tag)]
+    s = parse.quote(SEX.encode('utf-8'))
+    detail_url = "http://www.qimingzi.net/nameReportpc.aspx?surname=" + surname + "&name=" + lastname + \
+        "&sex=" + s +"&year="+str(YEAR)+"&month="+str(MONTH)+"&date="+str(DATE)+"&hour="+str(HOUR)+"&minute="+str(MINUTE)
+    driver = getHtml(detail_url)
+    score = driver.find_element_by_class_name('fenshu').text
+    driver.close
     print("名字：{}  分数：{}".format(name, score))
     writeDown("{},{}".format(name, score), TESTED_FILE)
     if score and int(score) >= THRESHOLD_SCORE:

@@ -3,12 +3,14 @@
 __author__ = 'HaoHao de Father'
 import random
 import sys
+import time
 import traceback
 from collections import defaultdict
-from conf import config, constants
-from conf.config import LAST_NAME, MIN_SINGLE_NUM, MAX_SINGLE_NUM, SELECTED_SANCAI, SELECTED_XITONGSHEN
+
 import utils
-import time
+from conf import config, constants
+from conf.config import (LAST_NAME, MAX_SINGLE_NUM, MIN_SINGLE_NUM,
+                         SELECTED_SANCAI, SELECTED_XITONGSHEN)
 from data import self_wuxing_dict as w
 
 g_sancai_wuxing_dict = {}
@@ -193,7 +195,7 @@ def calSelection(name_list, is_skip_tested=False):
             continue
         utils.getScore(name)
         # 按照正常用户的速度来访问，避免请求太快被封掉了
-        time.sleep(random.randint(4, 6))
+        time.sleep(random.randint(2, 4))
 
 
 def getWriteNumDict():
