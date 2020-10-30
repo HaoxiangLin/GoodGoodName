@@ -1,12 +1,13 @@
+import asyncio
+import time
 from collections import defaultdict
 from urllib import parse
 
-import requests
-import time
+from pyppeteer import launch
 
-from selenium import webdriver
 from conf import config, constants
-from conf.config import MAX_SINGLE_NUM, MIN_SINGLE_NUM, SEX, THRESHOLD_SCORE,YEAR,MONTH,DATE,HOUR,MINUTE
+from conf.config import (DATE, HOUR, MAX_SINGLE_NUM, MIN_SINGLE_NUM, MINUTE,
+                         MONTH, SEX, THRESHOLD_SCORE, YEAR, headers)
 from data import full_wuxing_dict as fwd
 
 TESTED_FILE = 'result/name_tested.txt'  # 已经在网站测试过的名字
@@ -76,18 +77,11 @@ def writeDown(result, file_name):
     return True
 
 
-def getHtml(url, req_params=None, req_headers=None):
-    # 这里图方便使用的是绝对路径，使用的时候请替换成自己的
-    driver = webdriver.PhantomJS(executable_path='F:/Download/phantomjs-2.1.1-windows/phantomjs-2.1.1-windows/bin/phantomjs.exe')
-    driver.get(url)
-    time.sleep(1)
-    return driver
-
-def getScore(name):
+async def getScore(name):
     """
     远程请求计算姓名的得分
     :param name:  姓名
-    :return: 得分
+    :return: 得分r
     """
     try:
         surname = parse.quote(name[0:1].encode('utf-8'))
@@ -98,9 +92,15 @@ def getScore(name):
     s = parse.quote(SEX.encode('utf-8'))
     detail_url = "http://www.qimingzi.net/nameReportpc.aspx?surname=" + surname + "&name=" + lastname + \
         "&sex=" + s +"&year="+str(YEAR)+"&month="+str(MONTH)+"&date="+str(DATE)+"&hour="+str(HOUR)+"&minute="+str(MINUTE)
-    driver = getHtml(detail_url)
-    score = driver.find_element_by_class_name('fenshu').text
-    driver.close
+    browser = await launch()
+    page = await browser.newPage()
+    await page.setViewport(viewport={'width':400,'height':300})
+    await page.goto(detail_url)
+    await page.setJavaScriptEnabled(enabled=True)
+    await asyncio.sleep(2)
+    element = await page.J('.fenshu')
+    score = await page.evaluate('(element)=>element.textContent',element)
+    await browser.close()
     print("名字：{}  分数：{}".format(name, score))
     writeDown("{},{}".format(name, score), TESTED_FILE)
     if score and int(score) >= THRESHOLD_SCORE:

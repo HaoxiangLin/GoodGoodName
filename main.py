@@ -8,6 +8,7 @@ import traceback
 from collections import defaultdict
 
 import utils
+import asyncio
 from conf import config, constants
 from conf.config import (LAST_NAME, MAX_SINGLE_NUM, MIN_SINGLE_NUM,
                          SELECTED_SANCAI, SELECTED_XITONGSHEN)
@@ -193,9 +194,9 @@ def calSelection(name_list, is_skip_tested=False):
     for name in name_list:
         if name in already_tested_dict:
             continue
-        utils.getScore(name)
+        asyncio.get_event_loop().run_until_complete(utils.getScore(name))
         # 按照正常用户的速度来访问，避免请求太快被封掉了
-        time.sleep(random.randint(2, 4))
+        time.sleep(random.randint(1, 3))
 
 
 def getWriteNumDict():
