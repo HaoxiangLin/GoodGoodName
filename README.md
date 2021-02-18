@@ -4,6 +4,11 @@
 [![Build Status](https://travis-ci.org/JakLiao/GoodGoodName.svg?branch=master)](https://travis-ci.org/JakLiao/GoodGoodName)
 [![996.icu](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
 
+# 发现的问题
+会遇到 "Navigation timeout of 30000 ms exceeded"的问题，暂时技术太渣没有找到解决办法，还没有跑通自动跑去网站测试的代码。
+使用了一个人肉的方法，通过修改程序让输出名字以及名字相对应的姓名测试的URL。就结束程序，后续自己先初筛出自己喜欢的名字，让数量大大降低再自己手动粘贴URL到浏览器进行名字测试查看分值。
+
+
 # 写在开头
 
 这是为了我的宝宝起名写的程序，宝宝小名好好。
